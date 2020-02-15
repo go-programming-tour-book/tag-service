@@ -1,0 +1,95 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "proto/tag.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/tags": {
+      "get": {
+        "operationId": "GetTagList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoGetTagListReply"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TagService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protoGetTagListReply": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protoTag"
+          }
+        },
+        "pager": {
+          "$ref": "#/definitions/protoPager"
+        }
+      }
+    },
+    "protoPager": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "string",
+          "format": "int64"
+        },
+        "page_size": {
+          "type": "string",
+          "format": "int64"
+        },
+        "total_rows": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protoTag": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

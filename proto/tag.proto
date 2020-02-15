@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package proto.v1;
+
+import "proto/common.proto";
+import "google/api/annotations.proto";
+
+service TagService {
+    rpc GetTagList (GetTagListRequest) returns (GetTagListReply) {
+        option (google.api.http) = {
+            get: "/api/v1/tags"
+        };
+    }
+}
+
+message GetTagListRequest {
+    string name = 1;
+    uint32 state = 2;
+}
+
+message Tag {
+    int64 id = 1;
+    string name = 2;
+    uint32 state = 3;
+}
+
+message GetTagListReply {
+    repeated Tag list = 1;
+    Pager pager = 2;
+}
