@@ -34,15 +34,10 @@ func ClientTracing() grpc.UnaryClientInterceptor {
 		md, ok := metadata.FromOutgoingContext(ctx)
 		if !ok {
 			md = metadata.New(nil)
-		} else {
-			md = md.Copy()
 		}
 		_ = global.Tracer.Inject(span.Context(), opentracing.TextMap, metatext.MetadataTextMap{md})
 		newCtx := opentracing.ContextWithSpan(metadata.NewOutgoingContext(ctx, md), span)
-		err := invoker(newCtx, method, req, reply, cc, opts...)
-		if err != nil {
-		}
-		return err
+		return invoker(newCtx, method, req, reply, cc, opts...)
 	}
 }
 

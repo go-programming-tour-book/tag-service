@@ -35,7 +35,7 @@ func GetClientConn(ctx context.Context, serviceName string, opts []grpc.DialOpti
 	}
 	cli, err := clientv3.New(config)
 	if err != nil {
-		log.Fatalf("clientv3.New err: %v", err)
+		return nil, err
 	}
 
 	r := &naming.GRPCResolver{Client: cli}

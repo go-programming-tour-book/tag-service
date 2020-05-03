@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"google.golang.org/grpc/metadata"
+
 	"github.com/go-programming-tour-book/tag-service/global"
 
 	"github.com/go-programming-tour-book/tag-service/internal/middleware"
@@ -24,7 +26,8 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	clientConn, err := GetClientConn(ctx, "localhost:8004", []grpc.DialOption{grpc.WithUnaryInterceptor(
+	newCtx := metadata.AppendToOutgoingContext(ctx, "eddycjy", "Go编程之旅")
+	clientConn, err := GetClientConn(newCtx, "localhost:8005", []grpc.DialOption{grpc.WithUnaryInterceptor(
 		grpc_middleware.ChainUnaryClient(
 			middleware.UnaryContextTimeout(),
 			middleware.ClientTracing(),
@@ -35,7 +38,8 @@ func main() {
 	}
 	defer clientConn.Close()
 	tagServiceClient := pb.NewTagServiceClient(clientConn)
-	resp, err := tagServiceClient.GetTagList(ctx, &pb.GetTagListRequest{Name: "Go"})
+	//newCtx := tagServiceClient.WithOrgCode(ctx, "Go编程之旅")
+	resp, err := tagServiceClient.GetTagList(newCtx, &pb.GetTagListRequest{Name: "Go"})
 	if err != nil {
 		log.Fatalf("tagServiceClient.GetTagList err: %v", err)
 	}

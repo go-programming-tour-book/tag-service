@@ -5,7 +5,9 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/go-programming-tour-book/tag-service/global"
@@ -23,7 +25,7 @@ import (
 
 	pb "github.com/go-programming-tour-book/tag-service/proto"
 	"github.com/go-programming-tour-book/tag-service/server"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -50,22 +52,34 @@ func setupTracer() error {
 }
 
 func main() {
+	runtime.SetMutexProfileFraction(1)
+	runtime.SetBlockProfileRate(1)
 	err := RunServer(port)
 	if err != nil {
 		log.Fatalf("Run Serve err: %v", err)
 	}
 }
 
+func runGrpcGatewayServer() *gwruntime.ServeMux {
+	endpoint := "0.0.0.0:" + port
+	gwmux := gwruntime.NewServeMux()
+	dopts := []grpc.DialOption{grpc.WithInsecure()}
+	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
+
+	return gwmux
+}
+
 func RunServer(port string) error {
 	httpMux := runHttpServer()
 	grpcS := runGrpcServer()
+	gatewayMux := runGrpcGatewayServer()
 
-	endpoint := "0.0.0.0:" + port
-	gwmux := runtime.NewServeMux()
-	dopts := []grpc.DialOption{grpc.WithInsecure()}
-	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
-	httpMux.Handle("/", gwmux)
-
+	httpMux.Handle("/", gatewayMux)
+	httpMux.HandleFunc("/debug/pprof/", pprof.Index)
+	httpMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	httpMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	httpMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	httpMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	return http.ListenAndServe(":"+port, grpcHandlerFunc(grpcS, httpMux))
 }
 

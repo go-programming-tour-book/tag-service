@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/opentracing/opentracing-go/ext"
 
@@ -51,7 +50,7 @@ func (a *API) httpGet(ctx context.Context, path string) ([]byte, error) {
 		return nil, err
 	}
 
-	span, newCtx := opentracing.StartSpanFromContext(
+	span, _ := opentracing.StartSpanFromContext(
 		ctx, "HTTP GET: "+a.URL,
 		opentracing.Tag{Key: string(ext.Component), Value: "HTTP"},
 	)
@@ -62,8 +61,8 @@ func (a *API) httpGet(ctx context.Context, path string) ([]byte, error) {
 		opentracing.HTTPHeadersCarrier(req.Header),
 	)
 
-	req = req.WithContext(newCtx)
-	client := http.Client{Timeout: time.Second * 60}
+	req = req.WithContext(context.Background())
+	client := http.Client{} //Timeout: time.Second * 60
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
