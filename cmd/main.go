@@ -1,4 +1,4 @@
-package history
+package main
 
 import (
 	"context"
@@ -9,17 +9,16 @@ import (
 	"strings"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"github.com/go-programming-tour-book/tag-service/global"
 	"github.com/go-programming-tour-book/tag-service/internal/middleware"
 	"github.com/go-programming-tour-book/tag-service/pkg/swagger"
-
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
-
+	"github.com/go-programming-tour-book/tag-service/pkg/tracer"
 	pb "github.com/go-programming-tour-book/tag-service/proto"
 	"github.com/go-programming-tour-book/tag-service/server"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -29,6 +28,20 @@ var port string
 func init() {
 	flag.StringVar(&port, "port", "8004", "启动端口号")
 	flag.Parse()
+
+	err := setupTracer()
+	if err != nil {
+		log.Fatalf("init.setupTracer err: %v", err)
+	}
+}
+
+func setupTracer() error {
+	jaegerTracer, _, err := tracer.NewJaegerTracer("tour-service", "127.0.0.1:6831")
+	if err != nil {
+		return err
+	}
+	global.Tracer = jaegerTracer
+	return nil
 }
 
 func main() {
@@ -38,16 +51,21 @@ func main() {
 	}
 }
 
+func runGrpcGatewayServer() *gwruntime.ServeMux {
+	endpoint := "0.0.0.0:" + port
+	gwmux := gwruntime.NewServeMux()
+	dopts := []grpc.DialOption{grpc.WithInsecure()}
+	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
+
+	return gwmux
+}
+
 func RunServer(port string) error {
 	httpMux := runHttpServer()
 	grpcS := runGrpcServer()
+	gatewayMux := runGrpcGatewayServer()
 
-	endpoint := "0.0.0.0:" + port
-	gwmux := runtime.NewServeMux()
-	dopts := []grpc.DialOption{grpc.WithInsecure()}
-	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
-	httpMux.Handle("/", gwmux)
-
+	httpMux.Handle("/", gatewayMux)
 	return http.ListenAndServe(":"+port, grpcHandlerFunc(grpcS, httpMux))
 }
 
@@ -85,6 +103,7 @@ func runGrpcServer() *grpc.Server {
 			middleware.AccessLog,
 			middleware.ErrorLog,
 			middleware.Recovery,
+			middleware.ServerTracing,
 		)),
 	}
 	s := grpc.NewServer(opts...)

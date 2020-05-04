@@ -1,4 +1,4 @@
-package history
+package main
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	clientConn, err := GetClientConn(ctx, "grpc-service", nil)
+	clientConn, err := GetClientConn(ctx, "tag-service", nil)
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}

@@ -17,6 +17,7 @@ package grpcproxy
 import (
 	"encoding/json"
 	"os"
+	"log"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
@@ -62,11 +63,14 @@ func Register(c *clientv3.Client, prefix string, addr string, ttl int) <-chan st
 }
 
 func registerSession(c *clientv3.Client, prefix string, addr string, ttl int) (*concurrency.Session, error) {
+	log.Println("registerSession start.")
 	ss, err := concurrency.NewSession(c, concurrency.WithTTL(ttl))
 	if err != nil {
+		log.Println("registerSession err")
 		return nil, err
 	}
 
+	log.Println("naming.GRPCResolver start.")
 	gr := &naming.GRPCResolver{Client: c}
 	if err = gr.Update(c.Ctx(), prefix, gnaming.Update{Op: gnaming.Add, Addr: addr, Metadata: getMeta()}, clientv3.WithLease(ss.Lease())); err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package history
+package main
 
 import (
 	"context"
@@ -10,8 +10,6 @@ import (
 
 func main() {
 	ctx := context.Background()
-	//md := metadata.New(map[string]string{"go": "programming", "tour": "book"})
-	//newCtx := metadata.NewOutgoingContext(ctx, md)
 	clientConn, err := GetClientConn(ctx, "localhost:8004", nil)
 	if err != nil {
 		log.Fatalf("err: %v", err)

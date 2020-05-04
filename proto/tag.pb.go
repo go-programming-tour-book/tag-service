@@ -6,13 +6,12 @@ package proto
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -206,43 +205,28 @@ var fileDescriptor_48dc6f15189f1be6 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // TagServiceClient is the client API for TagService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TagServiceClient interface {
 	GetTagList(ctx context.Context, in *GetTagListRequest, opts ...grpc.CallOption) (*GetTagListReply, error)
-	WithOrgCode(ctx context.Context, orgCode string) context.Context
 }
 
 type tagServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewTagServiceClient(cc grpc.ClientConnInterface) TagServiceClient {
+func NewTagServiceClient(cc *grpc.ClientConn) TagServiceClient {
 	return &tagServiceClient{cc}
 }
 
-type orgCodeKey struct{}
-
-func (c *tagServiceClient) WithOrgCode(ctx context.Context, orgCode string) context.Context {
-	return context.WithValue(ctx, orgCodeKey{}, orgCode)
-}
-
-func (c *tagServiceClient) OrgCode(ctx context.Context) (string, bool) {
-	v, ok := ctx.Value(orgCodeKey{}).(string)
-	return v, ok
-}
 func (c *tagServiceClient) GetTagList(ctx context.Context, in *GetTagListRequest, opts ...grpc.CallOption) (*GetTagListReply, error) {
-	//orgCode, ok := c.OrgCode(ctx)
-	//if !ok || orgCode == "" {
-	//	return nil, errors.New("请调用 WithOrgCode 方法设置租户标识")
-	//}
 	out := new(GetTagListReply)
 	err := c.cc.Invoke(ctx, "/proto.TagService/GetTagList", in, out, opts...)
 	if err != nil {
