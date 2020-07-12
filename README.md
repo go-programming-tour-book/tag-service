@@ -1,6 +1,6 @@
-# tag-service RPC 后端
+# tag-service（RPC 后端）
 
-tag-service RPC 后端
+tag-service（RPC 后端）
 是《Go 语言编程之旅：一起用 Go 做项目》中的项目，是第三章 [HTTP 应用：启动你的 RPC 服务] 的附属源码。
 
 ## 关于本书
