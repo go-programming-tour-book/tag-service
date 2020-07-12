@@ -9,8 +9,6 @@ tag-service RPC 后端
 
 本书适合已经大致学习了 Go 语言的基础语法后，想要跨越到下一个阶段的开发人员，可以填补该阶段的空白和进一步拓展你的思维方向。
 
-![image](https://image.eddycjy.com/04737f7b3e5567224fd2bc93f352203d.jpeg)
-
 - 作者：陈剑煜（煎鱼），GitHub：[@eddycjy](https://github.com/eddycjy)，微信公众号：脑子进煎鱼了。
 - 作者：徐新华（polaris），GitHub：[@polaris](https://github.com/polaris1119)，微信公众号：Go语言中文网。
 
